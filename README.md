@@ -34,6 +34,23 @@ A native Android security companion app that helps users understand and manage t
 - Quick actions for security improvements
 - Historical scan results
 
+## Screenshots
+
+| Home | App Audit | App Details |
+|:----:|:---------:|:-----------:|
+| ![Home](screenshots/home.png) | ![App Audit](screenshots/app_audit.png) | ![App Details](screenshots/app_details.png) |
+
+| Device Security | Network Scan | Privacy Dashboard |
+|:---------------:|:------------:|:-----------------:|
+| ![Device Security](screenshots/device_security.png) | ![Network Scan](screenshots/network_scan.png) | ![Privacy Dashboard](screenshots/privacy_dashboard.png) |
+
+## Demo Video
+
+https://github.com/ifahimkhan/ShieldCheck/blob/master/screenshots/video_thumbnail.mp4
+[![ShieldCheck Demo](screenshots/video_thumbnail.png)](https://github.com/user-attachments/assets/your-video-id)
+
+> Click the image above to watch the demo video
+
 ## Architecture
 
 The app follows **Clean Architecture** principles with **MVVM** pattern:
