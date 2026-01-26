@@ -47,7 +47,7 @@ A native Android security companion app that helps users understand and manage t
 ## Demo Video
 
 https://github.com/ifahimkhan/ShieldCheck/blob/master/screenshots/video_thumbnail.mp4
-[![ShieldCheck Demo](screenshots/video_thumbnail.png)](https://github.com/user-attachments/assets/your-video-id)
+[![ShieldCheck Demo](screenshots/video_thumbnail.png)](https://github.com/ifahimkhan/ShieldCheck/blob/master/screenshots/video_thumbnail.mp4)
 
 > Click the image above to watch the demo video
 
