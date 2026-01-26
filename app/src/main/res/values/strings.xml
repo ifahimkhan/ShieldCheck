@@ -1,3 +1,64 @@
 <resources>
     <string name="app_name">ShieldCheck</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_app_audit">App Audit</string>
+    <string name="nav_device_security">Device Security</string>
+    <string name="nav_network">Network</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+    <string name="refresh">Refresh</string>
+    <string name="back">Back</string>
+    <string name="scan">Scan</string>
+    <string name="rescan">Rescan</string>
+
+    <!-- Risk Levels -->
+    <string name="risk_critical">Critical</string>
+    <string name="risk_high">High</string>
+    <string name="risk_medium">Medium</string>
+    <string name="risk_low">Low</string>
+    <string name="risk_safe">Safe</string>
+
+    <!-- Home -->
+    <string name="home_welcome">Welcome to ShieldCheck</string>
+    <string name="home_subtitle">Your personal security companion</string>
+    <string name="home_security_score">Your Security Score</string>
+
+    <!-- App Audit -->
+    <string name="app_audit_title">App Permission Audit</string>
+    <string name="app_audit_scanning">Scanning apps...</string>
+    <string name="app_audit_permissions">permissions</string>
+    <string name="app_audit_dangerous">dangerous</string>
+    <string name="app_audit_system_app">System App</string>
+
+    <!-- Device Security -->
+    <string name="device_security_title">Device Security</string>
+    <string name="device_security_checking">Checking device security...</string>
+    <string name="device_rooted">Device is Rooted</string>
+    <string name="device_not_rooted">Device is not Rooted</string>
+    <string name="device_encrypted">Storage Encrypted</string>
+    <string name="device_not_encrypted">Storage Not Encrypted</string>
+    <string name="screen_lock_enabled">Screen Lock Enabled</string>
+    <string name="screen_lock_disabled">No Screen Lock</string>
+
+    <!-- Network -->
+    <string name="network_title">Network Security</string>
+    <string name="network_scanning">Scanning network...</string>
+    <string name="vpn_active">VPN Active</string>
+    <string name="vpn_inactive">VPN Inactive</string>
+    <string name="wifi_secure">WiFi Secure</string>
+    <string name="wifi_insecure">WiFi Insecure</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_auto_scan">Auto Scan</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_scan_interval">Scan Interval</string>
+    <string name="settings_about">About</string>
 </resources>
