@@ -24,10 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.fahim.shieldcheck.domain.model.app.InstalledApp
+import com.fahim.shieldcheck.domain.model.app.RiskLevel
 import com.fahim.shieldcheck.presentation.common.components.RiskBadge
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
 @Composable
 fun AppListItem(
@@ -117,5 +120,28 @@ fun AppListItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AppListItemPreview() {
+    ShieldCheckTheme {
+        AppListItem(
+            app = InstalledApp(
+                packageName = "com.example.app",
+                appName = "Example App",
+                versionName = "1.0.0",
+                versionCode = 1,
+                isSystemApp = false,
+                installedDate = null,
+                lastUpdatedDate = null,
+                icon = null,
+                permissions = emptyList(),
+                riskScore = 45,
+                riskLevel = RiskLevel.MEDIUM
+            ),
+            onClick = {}
+        )
     }
 }

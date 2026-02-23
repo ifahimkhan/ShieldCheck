@@ -38,14 +38,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.fahim.shieldcheck.domain.model.app.InstalledApp
+import com.fahim.shieldcheck.domain.model.app.RiskLevel
 import com.fahim.shieldcheck.presentation.common.components.LoadingIndicator
 import com.fahim.shieldcheck.presentation.screens.appaudit.components.AppListItem
 import com.fahim.shieldcheck.presentation.screens.appaudit.components.AppStatisticsCard
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppAuditScreen(
     onNavigateBack: () -> Unit,
@@ -53,13 +56,38 @@ fun AppAuditScreen(
     viewModel: AppAuditViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AppAuditScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onNavigateToAppDetail = onNavigateToAppDetail,
+        onScanApps = viewModel::scanApps,
+        onSearchQueryChanged = viewModel::setSearchQuery,
+        onFilterSelected = viewModel::setFilter,
+        onToggleSystemApps = viewModel::toggleSystemApps,
+        onClearError = viewModel::clearError
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppAuditScreen(
+    uiState: AppAuditUiState,
+    onNavigateBack: () -> Unit,
+    onNavigateToAppDetail: (String) -> Unit,
+    onScanApps: () -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
+    onFilterSelected: (AppFilter) -> Unit,
+    onToggleSystemApps: () -> Unit,
+    onClearError: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            onClearError()
         }
     }
 
@@ -75,7 +103,7 @@ fun AppAuditScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = { viewModel.scanApps() },
+                        onClick = onScanApps,
                         enabled = !uiState.isScanning
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
@@ -105,7 +133,7 @@ fun AppAuditScreen(
                 // Search Bar
                 OutlinedTextField(
                     value = uiState.searchQuery,
-                    onValueChange = { viewModel.setSearchQuery(it) },
+                    onValueChange = onSearchQueryChanged,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -124,7 +152,7 @@ fun AppAuditScreen(
                     items(AppFilter.entries) { filter ->
                         FilterChip(
                             selected = uiState.selectedFilter == filter,
-                            onClick = { viewModel.setFilter(filter) },
+                            onClick = { onFilterSelected(filter) },
                             label = { Text(filter.name) }
                         )
                     }
@@ -144,7 +172,7 @@ fun AppAuditScreen(
                     )
                     Switch(
                         checked = uiState.showSystemApps,
-                        onCheckedChange = { viewModel.toggleSystemApps() }
+                        onCheckedChange = { onToggleSystemApps() }
                     )
                 }
 
@@ -186,5 +214,54 @@ fun AppAuditScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AppAuditScreenPreview() {
+    val mockApps = listOf(
+        InstalledApp(
+            packageName = "com.example.social",
+            appName = "Social Media",
+            versionName = "2.1.0",
+            versionCode = 21,
+            isSystemApp = false,
+            installedDate = null,
+            lastUpdatedDate = null,
+            icon = null,
+            permissions = emptyList(),
+            riskScore = 65,
+            riskLevel = RiskLevel.HIGH
+        ),
+        InstalledApp(
+            packageName = "com.example.camera",
+            appName = "Camera App",
+            versionName = "1.0.0",
+            versionCode = 1,
+            isSystemApp = false,
+            installedDate = null,
+            lastUpdatedDate = null,
+            icon = null,
+            permissions = emptyList(),
+            riskScore = 30,
+            riskLevel = RiskLevel.MEDIUM
+        )
+    )
+
+    ShieldCheckTheme {
+        AppAuditScreen(
+            uiState = AppAuditUiState(
+                isLoading = false,
+                filteredApps = mockApps
+            ),
+            onNavigateBack = {},
+            onNavigateToAppDetail = {},
+            onScanApps = {},
+            onSearchQueryChanged = {},
+            onFilterSelected = {},
+            onToggleSystemApps = {},
+            onClearError = {}
+        )
     }
 }

@@ -27,8 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
 @Composable
 fun SecurityScoreCard(
@@ -155,5 +157,17 @@ fun getSecurityGrade(score: Int): String {
         score >= 60 -> "Grade: C"
         score >= 40 -> "Grade: D"
         else -> "Grade: F"
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SecurityScoreCardPreview() {
+    ShieldCheckTheme {
+        SecurityScoreCard(
+            score = 85,
+            title = "Your Security Score",
+            subtitle = "Based on apps, device, and network analysis"
+        )
     }
 }

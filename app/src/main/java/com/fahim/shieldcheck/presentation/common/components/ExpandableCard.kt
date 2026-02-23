@@ -25,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
 @Composable
 fun ExpandableCard(
@@ -91,6 +93,20 @@ fun ExpandableCard(
                     content()
                 }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ExpandableCardPreview() {
+    ShieldCheckTheme {
+        ExpandableCard(
+            title = "Security Checks",
+            subtitle = "3 items",
+            initialExpanded = true
+        ) {
+            Text("Sample expandable content")
         }
     }
 }

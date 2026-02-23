@@ -29,17 +29,23 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fahim.shieldcheck.presentation.common.components.SecurityScoreCard
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +58,40 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadSecurityScore()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    HomeScreenContent(
+        uiState = uiState,
+        onNavigateToAppAudit = onNavigateToAppAudit,
+        onNavigateToDeviceSecurity = onNavigateToDeviceSecurity,
+        onNavigateToNetworkScan = onNavigateToNetworkScan,
+        onNavigateToPrivacyDashboard = onNavigateToPrivacyDashboard,
+        onNavigateToSettings = onNavigateToSettings
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContent(
+    uiState: HomeUiState,
+    onNavigateToAppAudit: () -> Unit,
+    onNavigateToDeviceSecurity: () -> Unit,
+    onNavigateToNetworkScan: () -> Unit,
+    onNavigateToPrivacyDashboard: () -> Unit,
+    onNavigateToSettings: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -260,5 +299,20 @@ private fun FeatureCard(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenPreview() {
+    ShieldCheckTheme {
+        HomeScreenContent(
+            uiState = HomeUiState(),
+            onNavigateToAppAudit = {},
+            onNavigateToDeviceSecurity = {},
+            onNavigateToNetworkScan = {},
+            onNavigateToPrivacyDashboard = {},
+            onNavigateToSettings = {}
+        )
     }
 }

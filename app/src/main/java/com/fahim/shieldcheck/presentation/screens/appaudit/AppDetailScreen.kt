@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,10 +53,10 @@ import com.fahim.shieldcheck.domain.model.app.RiskLevel
 import com.fahim.shieldcheck.presentation.common.components.ExpandableCard
 import com.fahim.shieldcheck.presentation.common.components.LoadingIndicator
 import com.fahim.shieldcheck.presentation.common.components.RiskBadge
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDetailScreen(
     packageName: String,
@@ -63,12 +64,27 @@ fun AppDetailScreen(
     viewModel: AppDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AppDetailScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onClearError = viewModel::clearError
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppDetailScreen(
+    uiState: AppDetailUiState,
+    onNavigateBack: () -> Unit,
+    onClearError: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            onClearError()
         }
     }
 
@@ -341,5 +357,51 @@ private fun getRiskDescription(riskLevel: RiskLevel, dangerousCount: Int): Strin
         RiskLevel.MEDIUM -> "This app has some permissions that warrant attention but poses moderate risk."
         RiskLevel.LOW -> "This app requests minimal sensitive permissions."
         RiskLevel.SAFE -> "This app has a low risk profile with no dangerous permissions."
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AppDetailScreenPreview() {
+    val mockApp = InstalledApp(
+        packageName = "com.example.social",
+        appName = "Social Media",
+        versionName = "2.1.0",
+        versionCode = 21,
+        isSystemApp = false,
+        installedDate = null,
+        lastUpdatedDate = null,
+        icon = null,
+        permissions = listOf(
+            AppPermission(
+                name = "android.permission.CAMERA",
+                description = "Access the camera",
+                riskScore = 70,
+                riskLevel = RiskLevel.HIGH,
+                isGranted = true,
+                isDangerous = true
+            ),
+            AppPermission(
+                name = "android.permission.INTERNET",
+                description = "Access the internet",
+                riskScore = 10,
+                riskLevel = RiskLevel.LOW,
+                isGranted = true,
+                isDangerous = false
+            )
+        ),
+        riskScore = 65,
+        riskLevel = RiskLevel.HIGH
+    )
+
+    ShieldCheckTheme {
+        AppDetailScreen(
+            uiState = AppDetailUiState(
+                isLoading = false,
+                app = mockApp
+            ),
+            onNavigateBack = {},
+            onClearError = {}
+        )
     }
 }

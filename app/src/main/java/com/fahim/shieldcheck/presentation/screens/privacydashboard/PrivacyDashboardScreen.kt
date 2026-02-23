@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,10 +48,10 @@ import com.fahim.shieldcheck.domain.model.dashboard.RecommendationPriority
 import com.fahim.shieldcheck.domain.model.dashboard.SecurityRecommendation
 import com.fahim.shieldcheck.presentation.common.components.LoadingIndicator
 import com.fahim.shieldcheck.presentation.common.components.SecurityScoreCard
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyDashboardScreen(
     onNavigateBack: () -> Unit,
@@ -60,12 +61,35 @@ fun PrivacyDashboardScreen(
     viewModel: PrivacyDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    PrivacyDashboardScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onNavigateToAppAudit = onNavigateToAppAudit,
+        onNavigateToDeviceSecurity = onNavigateToDeviceSecurity,
+        onNavigateToNetworkScan = onNavigateToNetworkScan,
+        onRefresh = viewModel::loadSummary,
+        onClearError = viewModel::clearError
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PrivacyDashboardScreen(
+    uiState: PrivacyDashboardUiState,
+    onNavigateBack: () -> Unit,
+    onNavigateToAppAudit: () -> Unit,
+    onNavigateToDeviceSecurity: () -> Unit,
+    onNavigateToNetworkScan: () -> Unit,
+    onRefresh: () -> Unit,
+    onClearError: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            onClearError()
         }
     }
 
@@ -79,7 +103,7 @@ fun PrivacyDashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.loadSummary() }) {
+                    IconButton(onClick = onRefresh) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
@@ -375,5 +399,52 @@ private fun getScoreColor(score: Int): Color {
         score >= 60 -> Color(0xFFFFC107)
         score >= 40 -> Color(0xFFF57C00)
         else -> Color(0xFFD32F2F)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PrivacyDashboardScreenPreview() {
+    val mockSummary = PrivacySummary(
+        overallScore = 75,
+        grade = "B",
+        appRiskScore = 25.0,
+        deviceSecurityScore = 85,
+        networkSecurityScore = 78,
+        totalAppsScanned = 42,
+        criticalAppsCount = 2,
+        highRiskAppsCount = 5,
+        deviceIssuesCount = 1,
+        networkIssuesCount = 1,
+        lastScanDate = null,
+        recommendations = listOf(
+            SecurityRecommendation(
+                title = "Review App Permissions",
+                description = "2 apps have critical permissions that need review",
+                priority = RecommendationPriority.HIGH,
+                actionType = RecommendationAction.REVIEW_APPS
+            ),
+            SecurityRecommendation(
+                title = "Enable VPN",
+                description = "Your network connection is not protected",
+                priority = RecommendationPriority.MEDIUM,
+                actionType = RecommendationAction.NETWORK_SETTINGS
+            )
+        )
+    )
+
+    ShieldCheckTheme {
+        PrivacyDashboardScreen(
+            uiState = PrivacyDashboardUiState(
+                isLoading = false,
+                summary = mockSummary
+            ),
+            onNavigateBack = {},
+            onNavigateToAppAudit = {},
+            onNavigateToDeviceSecurity = {},
+            onNavigateToNetworkScan = {},
+            onRefresh = {},
+            onClearError = {}
+        )
     }
 }

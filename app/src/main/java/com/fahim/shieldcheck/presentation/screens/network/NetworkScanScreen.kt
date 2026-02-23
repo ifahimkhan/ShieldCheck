@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,23 +48,41 @@ import com.fahim.shieldcheck.domain.model.network.NetworkIssueSeverity
 import com.fahim.shieldcheck.domain.model.network.NetworkSecurityStatus
 import com.fahim.shieldcheck.domain.model.network.OpenPort
 import com.fahim.shieldcheck.domain.model.network.WifiSecurityInfo
+import com.fahim.shieldcheck.domain.model.network.WifiSecurityType
 import com.fahim.shieldcheck.presentation.common.components.ExpandableCard
 import com.fahim.shieldcheck.presentation.common.components.LoadingIndicator
 import com.fahim.shieldcheck.presentation.common.components.SecurityScoreCard
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NetworkScanScreen(
     onNavigateBack: () -> Unit,
     viewModel: NetworkScanViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    NetworkScanScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onRescan = viewModel::scanNetwork,
+        onClearError = viewModel::clearError
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NetworkScanScreen(
+    uiState: NetworkScanUiState,
+    onNavigateBack: () -> Unit,
+    onRescan: () -> Unit,
+    onClearError: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            onClearError()
         }
     }
 
@@ -78,7 +97,7 @@ fun NetworkScanScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = { viewModel.scanNetwork() },
+                        onClick = onRescan,
                         enabled = !uiState.isScanning
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "Rescan")
@@ -418,6 +437,50 @@ private fun NetworkDetailRow(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NetworkScanScreenPreview() {
+    val mockStatus = NetworkSecurityStatus(
+        wifiInfo = WifiSecurityInfo(
+            ssid = "HomeNetwork",
+            bssid = "AA:BB:CC:DD:EE:FF",
+            securityType = WifiSecurityType.WPA2,
+            signalStrength = 4,
+            frequency = 5180,
+            linkSpeed = 866,
+            isSecure = true
+        ),
+        openPorts = listOf(
+            OpenPort(port = 80, protocol = "TCP", serviceName = "HTTP", isCommonlyExploited = false),
+            OpenPort(port = 443, protocol = "TCP", serviceName = "HTTPS", isCommonlyExploited = false)
+        ),
+        activeConnections = emptyList(),
+        isVpnActive = false,
+        localIpAddress = "192.168.1.100",
+        overallScore = 78,
+        issues = listOf(
+            NetworkIssue(
+                title = "No VPN Detected",
+                description = "Your connection is not protected by a VPN",
+                severity = NetworkIssueSeverity.WARNING,
+                recommendation = "Consider using a VPN for enhanced privacy"
+            )
+        )
+    )
+
+    ShieldCheckTheme {
+        NetworkScanScreen(
+            uiState = NetworkScanUiState(
+                isLoading = false,
+                networkStatus = mockStatus
+            ),
+            onNavigateBack = {},
+            onRescan = {},
+            onClearError = {}
         )
     }
 }

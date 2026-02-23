@@ -37,29 +37,48 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fahim.shieldcheck.domain.model.device.DeviceSecurityStatus
 import com.fahim.shieldcheck.domain.model.device.IssueSeverity
+import com.fahim.shieldcheck.domain.model.device.ScreenLockType
 import com.fahim.shieldcheck.domain.model.device.SecurityIssue
 import com.fahim.shieldcheck.presentation.common.components.ExpandableCard
 import com.fahim.shieldcheck.presentation.common.components.LoadingIndicator
 import com.fahim.shieldcheck.presentation.common.components.SecurityScoreCard
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceSecurityScreen(
     onNavigateBack: () -> Unit,
     viewModel: DeviceSecurityViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
+    DeviceSecurityScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onRescan = viewModel::scanDeviceSecurity,
+        onClearError = viewModel::clearError
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DeviceSecurityScreen(
+    uiState: DeviceSecurityUiState,
+    onNavigateBack: () -> Unit,
+    onRescan: () -> Unit,
+    onClearError: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            onClearError()
         }
     }
 
@@ -74,7 +93,7 @@ fun DeviceSecurityScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = { viewModel.scanDeviceSecurity() },
+                        onClick = onRescan,
                         enabled = !uiState.isScanning
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "Rescan")
@@ -298,6 +317,39 @@ private fun DeviceInfoRow(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DeviceSecurityScreenPreview() {
+    val mockStatus = DeviceSecurityStatus(
+        isRooted = false,
+        isEncrypted = true,
+        hasScreenLock = true,
+        screenLockType = ScreenLockType.BIOMETRIC,
+        isDeveloperOptionsEnabled = false,
+        isUsbDebuggingEnabled = false,
+        isUnknownSourcesEnabled = false,
+        securityPatchLevel = "2023-10-01",
+        androidVersion = "13",
+        sdkVersion = 33,
+        deviceModel = "Pixel 7",
+        manufacturer = "Google",
+        overallScore = 100,
+        securityIssues = emptyList()
+    )
+    
+    ShieldCheckTheme {
+        DeviceSecurityScreen(
+            uiState = DeviceSecurityUiState(
+                isLoading = false,
+                securityStatus = mockStatus
+            ),
+            onNavigateBack = {},
+            onRescan = {},
+            onClearError = {}
         )
     }
 }

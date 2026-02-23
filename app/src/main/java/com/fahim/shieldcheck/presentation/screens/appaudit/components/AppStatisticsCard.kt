@@ -14,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 import com.fahim.shieldcheck.domain.usecase.app.AppStatistics
 
 @Composable
@@ -106,6 +108,24 @@ private fun StatItem(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AppStatisticsCardPreview() {
+    ShieldCheckTheme {
+        AppStatisticsCard(
+            statistics = AppStatistics(
+                totalApps = 42,
+                criticalCount = 2,
+                highRiskCount = 5,
+                mediumRiskCount = 8,
+                lowRiskCount = 15,
+                safeCount = 12,
+                averageRiskScore = 35.5
+            )
         )
     }
 }

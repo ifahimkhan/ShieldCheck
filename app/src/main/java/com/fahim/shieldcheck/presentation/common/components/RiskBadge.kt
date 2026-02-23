@@ -2,6 +2,7 @@ package com.fahim.shieldcheck.presentation.common.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -11,7 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 import com.fahim.shieldcheck.domain.model.app.RiskLevel
 
 @Composable
@@ -55,4 +58,18 @@ fun RiskScoreBadge(
         else -> RiskLevel.SAFE
     }
     RiskBadge(riskLevel = riskLevel, modifier = modifier)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RiskBadgePreview() {
+    ShieldCheckTheme {
+        Column {
+            RiskBadge(riskLevel = RiskLevel.CRITICAL)
+            RiskBadge(riskLevel = RiskLevel.HIGH)
+            RiskBadge(riskLevel = RiskLevel.MEDIUM)
+            RiskBadge(riskLevel = RiskLevel.LOW)
+            RiskBadge(riskLevel = RiskLevel.SAFE)
+        }
+    }
 }

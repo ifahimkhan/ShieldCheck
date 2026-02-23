@@ -34,11 +34,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.fahim.shieldcheck.ui.theme.ShieldCheckTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
@@ -46,6 +47,24 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    SettingsScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onAutoScanChanged = viewModel::setAutoScanEnabled,
+        onScanIntervalChanged = { viewModel.setScanInterval(it.toInt()) },
+        onNotificationsChanged = viewModel::setNotificationsEnabled
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsScreen(
+    uiState: SettingsUiState,
+    onNavigateBack: () -> Unit,
+    onAutoScanChanged: (Boolean) -> Unit,
+    onScanIntervalChanged: (Float) -> Unit,
+    onNotificationsChanged: (Boolean) -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,7 +92,7 @@ fun SettingsScreen(
                         title = "Auto Scan",
                         description = "Automatically scan for security issues",
                         checked = uiState.autoScanEnabled,
-                        onCheckedChange = { viewModel.setAutoScanEnabled(it) }
+                        onCheckedChange = onAutoScanChanged
                     )
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -86,7 +105,7 @@ fun SettingsScreen(
                         valueRange = 6f..72f,
                         steps = 10,
                         valueLabel = "${uiState.scanIntervalHours} hours",
-                        onValueChange = { viewModel.setScanInterval(it.toInt()) },
+                        onValueChange = onScanIntervalChanged,
                         enabled = uiState.autoScanEnabled
                     )
                 }
@@ -100,7 +119,7 @@ fun SettingsScreen(
                         title = "Security Alerts",
                         description = "Receive notifications about security issues",
                         checked = uiState.notificationsEnabled,
-                        onCheckedChange = { viewModel.setNotificationsEnabled(it) }
+                        onCheckedChange = onNotificationsChanged
                     )
                 }
             }
@@ -339,6 +358,24 @@ private fun FeatureBullet(text: String) {
             text = text,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsScreenPreview() {
+    ShieldCheckTheme {
+        SettingsScreen(
+            uiState = SettingsUiState(
+                autoScanEnabled = true,
+                notificationsEnabled = true,
+                scanIntervalHours = 24
+            ),
+            onNavigateBack = {},
+            onAutoScanChanged = {},
+            onScanIntervalChanged = {},
+            onNotificationsChanged = {}
         )
     }
 }
