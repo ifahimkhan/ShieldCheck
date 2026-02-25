@@ -13,7 +13,7 @@ import com.fahim.shieldcheck.data.local.db.dao.NetworkScanResultDao
 import com.fahim.shieldcheck.data.local.db.entity.AppScanResultEntity
 import com.fahim.shieldcheck.data.local.db.entity.DeviceScanResultEntity
 import com.fahim.shieldcheck.data.local.db.entity.NetworkScanResultEntity
-import net.sqlcipher.database.SQLiteDatabase
+import android.util.Log
 import net.sqlcipher.database.SupportFactory
 
 @Database(
@@ -33,6 +33,7 @@ abstract class ShieldCheckDatabase : RoomDatabase() {
     abstract fun networkScanResultDao(): NetworkScanResultDao
 
     companion object {
+        private const val TAG = "ShieldCheckDatabase"
         private const val DATABASE_NAME = "shieldcheck_database"
 
         @Volatile
@@ -47,6 +48,19 @@ abstract class ShieldCheckDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context, passphrase: ByteArray): ShieldCheckDatabase {
             val factory = SupportFactory(passphrase)
 
+            return try {
+                createDatabase(context, factory).also {
+                    // Verify the database can be opened
+                    it.openHelper.readableDatabase
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Database could not be opened, deleting and recreating", e)
+                context.applicationContext.deleteDatabase(DATABASE_NAME)
+                createDatabase(context, factory)
+            }
+        }
+
+        private fun createDatabase(context: Context, factory: SupportFactory): ShieldCheckDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 ShieldCheckDatabase::class.java,

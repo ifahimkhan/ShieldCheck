@@ -1,70 +1,55 @@
 package com.fahim.shieldcheck.core.security
 
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
-import java.security.KeyStore
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.security.SecureRandom
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class KeystoreManager @Inject constructor() {
+class KeystoreManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
-    private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
-        load(null)
-    }
-
-    fun getOrCreateDatabaseKey(): SecretKey {
-        return if (keyStore.containsAlias(DATABASE_KEY_ALIAS)) {
-            keyStore.getKey(DATABASE_KEY_ALIAS, null) as SecretKey
-        } else {
-            generateDatabaseKey()
-        }
-    }
-
-    private fun generateDatabaseKey(): SecretKey {
-        val keyGenerator = KeyGenerator.getInstance(
-            KeyProperties.KEY_ALGORITHM_AES,
-            ANDROID_KEYSTORE
-        )
-
-        val keySpec = KeyGenParameterSpec.Builder(
-            DATABASE_KEY_ALIAS,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        )
-            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-            .setKeySize(256)
-            .setUserAuthenticationRequired(false)
+    private val masterKey: MasterKey by lazy {
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
+    }
 
-        keyGenerator.init(keySpec)
-        return keyGenerator.generateKey()
+    private val encryptedPrefs: SharedPreferences by lazy {
+        EncryptedSharedPreferences.create(
+            context,
+            KEYSTORE_PREFS_FILE,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
     fun getDatabasePassphrase(): ByteArray {
-        val secretKey = getOrCreateDatabaseKey()
-        return secretKey.encoded ?: generateFallbackPassphrase()
-    }
-
-    private fun generateFallbackPassphrase(): ByteArray {
-        // Fallback for devices where encoded key is null
-        return "shieldcheck_secure_db_${System.currentTimeMillis()}".toByteArray()
-    }
-
-    fun keyExists(alias: String): Boolean {
-        return keyStore.containsAlias(alias)
-    }
-
-    fun deleteKey(alias: String) {
-        if (keyStore.containsAlias(alias)) {
-            keyStore.deleteEntry(alias)
+        val stored = encryptedPrefs.getString(KEY_DB_PASSPHRASE, null)
+        if (stored != null) {
+            return stored.toByteArray(Charsets.UTF_8)
         }
+
+        // Generate a stable random passphrase on first launch
+        val passphrase = generateRandomPassphrase()
+        encryptedPrefs.edit().putString(KEY_DB_PASSPHRASE, passphrase).apply()
+        return passphrase.toByteArray(Charsets.UTF_8)
+    }
+
+    private fun generateRandomPassphrase(): String {
+        val bytes = ByteArray(32)
+        SecureRandom().nextBytes(bytes)
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 
     companion object {
-        private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        private const val DATABASE_KEY_ALIAS = "shieldcheck_db_key"
+        private const val KEYSTORE_PREFS_FILE = "shieldcheck_keystore_prefs"
+        private const val KEY_DB_PASSPHRASE = "db_passphrase"
     }
 }
